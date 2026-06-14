@@ -225,7 +225,7 @@ const Details = () => {
                 "Content-Type": "application/json",
                 Authorization: `Bearer ${storedUser?.state?.token}`,
             };
-            const url = `${import.meta.env.VITE_BACKEND_URL}/estudiantes`;
+            const url = `${import.meta.env.VITE_BACKEND_URL}/administrador/listarEstudiantes`;
             const response = await fetchDataBackend(url, null, "GET", headers);
             
             const lista = Array.isArray(response) ? response : (Array.isArray(response?.data) ? response.data : []);
