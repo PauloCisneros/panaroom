@@ -263,10 +263,6 @@ const Details = () => {
                 tipoComentario: tipoComentarioNormalizado,
             };
 
-            if (esTerminacion && calificacion > 0) {
-                payload.calificacion = calificacion;
-            };
-
             // Debugging logs removed
             
             const storedUser = JSON.parse(localStorage.getItem("auth-token"));
@@ -278,6 +274,39 @@ const Details = () => {
                 },
             });
             
+            // Debugging logs removed
+
+            const comentarioId =
+                response?.data?.data?._id ||
+                response?.data?.data?.id ||
+                response?.data?._id ||
+                response?.data?.id;
+
+            // Si es terminación, enviar también la calificación
+            if (esTerminacion && comentarioId && calificacion > 0) {
+                try {
+                    const calificacionUrl = `${import.meta.env.VITE_BACKEND_URL}/queja-sugerencia/calificacion`;
+                    const calificacionPayload = {
+                        id: comentarioId,
+                        calificacion: calificacion,
+                    };
+
+                    // Debugging logs removed
+
+                    await axios.put(calificacionUrl, calificacionPayload, {
+                        headers: {
+                            'Content-Type': 'application/json',
+                            Authorization: `Bearer ${storedUser?.state?.token}`,
+                        },
+                    });
+
+                    // Debugging logs removed
+                } catch (calificacionError) {
+                    console.error("[Details] Error al enviar calificación:", calificacionError);
+                    // No lanzar error, continuar con el proceso
+                }
+            }
+
             toast.dismiss(loadingToast);
             toast.success(response?.data?.msg || (esTerminacion ? "Comentario enviado correctamente" : "Comentario enviado correctamente"));
             reset();
@@ -286,7 +315,7 @@ const Details = () => {
                 setModoComentario(null);
                 setCalificacion(0);
                 setTimeout(() => {
-                    ejecutarTerminarContrato(data.descripcion); // Pass the description here
+                    ejecutarTerminarContrato();
                 }, 1000);
             } else {
                 cerrarModalComentario();
@@ -303,18 +332,16 @@ const Details = () => {
         }
     };
 
-    const ejecutarTerminarContrato = async (descripcionComentario) => {
+    const ejecutarTerminarContrato = async () => {
         if (!departamento?._id || terminandoContrato) return;
 
         setTerminandoContrato(true);
         const loadingToast = toast.loading("Terminando contrato...");
 
         try {
-            // The backend expects 'descripcion' in the payload for this endpoint
             const url = `${import.meta.env.VITE_BACKEND_URL}/departamento/quitarEstudiante`;
             const payload = {
                 departamentoId: departamento._id,
-                descripcion: descripcionComentario, // Add the description to the payload
             };
 
             const storedUser = JSON.parse(localStorage.getItem("auth-token"));
