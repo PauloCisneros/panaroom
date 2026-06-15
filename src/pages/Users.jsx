@@ -188,12 +188,12 @@ const Users = () => {
                 ...usersData.map((u) => ({
                     ...u,
                     rol: u?.rol || "arrendatario",
-                    confirmEmail: u?.confirmEmail !== false,
+                    status: u?.status !== false,
                 })),
                 ...estudiantesData.map((u) => ({
                     ...u,
                     rol: u?.rol || "estudiante",
-                    confirmEmail: u?.confirmEmail !== false,
+                    status: u?.status !== false,
                 })),
             ];
 
@@ -283,7 +283,7 @@ const Users = () => {
         if (!usuarioId || !["estudiante", "arrendatario"].includes(tipo)) return;
 
         const estaActivo = usuario?.confirmEmail !== false;
-        const tieneResidencias = (userDepartamentos[usuarioId] || []).length > 0;
+        const tieneResidencias = (userDepartamentos[usuarioId] || []).length > 0; // This check is still valid based on confirmEmail
 
         if (estaActivo && tieneResidencias) {
             toast.error("No puedes desactivar esta cuenta porque tiene residencias asignadas.");
@@ -310,7 +310,7 @@ const Users = () => {
 
             await axios.put(
                 `${import.meta.env.VITE_BACKEND_URL}/administrador/estadoUsuario`,
-                { id: usuarioId, tipo, confirmEmail: !estaActivo },
+                { id: usuarioId, tipo, status: !estaActivo }, // Changed 'confirmEmail' to 'status' as per request
                 {
                     headers: {
                         "Content-Type": "application/json",
@@ -321,8 +321,8 @@ const Users = () => {
 
             const nuevoEstado = !estaActivo;
             setUsers((prev) => prev.map((u) => {
-                const userId = u?._id || u?.id;
-                return String(userId) === String(usuarioId) ? { ...u, confirmEmail: nuevoEstado } : u;
+                const userId = u?._id || u?.id; // Assuming the backend now returns 'status'
+                return String(userId) === String(usuarioId) ? { ...u, status: nuevoEstado } : u;
             }));
 
             if (tipo === "arrendatario") {
@@ -627,13 +627,13 @@ const Users = () => {
                                     disabled={confirmingArrendatarioId === (user?._id || user?.id)}
                                     className={`rounded-full px-3.5 py-2 text-xs font-semibold transition-all disabled:opacity-60 ${
                                         user?.confirmEmail === false
-                                            ? "bg-emerald-600 text-white hover:shadow-md"
-                                            : "bg-red-50 text-red-700 border border-red-200 hover:bg-red-100"
+                                            ? "bg-emerald-600 text-white hover:shadow-md" // If confirmEmail is false, it means it's inactive, so activate
+                                            : "bg-red-50 text-red-700 border border-red-200 hover:bg-red-100" // If confirmEmail is true, it means it's active, so deactivate
                                     }`}
                                 >
                                     {confirmingArrendatarioId === (user?._id || user?.id)
                                         ? "Guardando..."
-                                        : user?.confirmEmail === false
+                                        : user?.confirmEmail === false // This still relies on confirmEmail for UI, assuming backend response is still confirmEmail
                                             ? "Activar cuenta"
                                             : "Desactivar cuenta"}
                                 </button>
@@ -764,7 +764,7 @@ const Users = () => {
                                     </div>
                                 </div>
 
-                                {estudianteSeleccionado?.confirmEmail === false && (
+                                {estudianteSeleccionado?.confirmEmail === false && ( // This still relies on confirmEmail for UI, assuming backend response is still confirmEmail
                                     <div className="flex flex-col justify-center">
                                     <div className="rounded-3xl border border-emerald-100 bg-emerald-50/50 p-6 text-center">
                                         <FaClock className="h-10 w-10 text-emerald-600 mx-auto mb-3 opacity-80" />
@@ -825,7 +825,7 @@ const Users = () => {
                                 <p><span className="font-semibold">Dirección:</span> {arrendatarioSeleccionado.direccion || "No disponible"}</p>
                                 <p><span className="font-semibold">Rol:</span> {capitalizar(normalizarRol(arrendatarioSeleccionado.rol))}</p>
                                 <p>
-                                    <span className="font-semibold">Confirmación:</span>{" "}
+                                    <span className="font-semibold">Confirmación:</span>{" "} {/* This still relies on confirmEmail for UI, assuming backend response is still confirmEmail */}
                                     {arrendatariosNoConfirmadosIds.includes(arrendatarioSeleccionado?._id || arrendatarioSeleccionado?.id)
                                         ? "Pendiente"
                                         : "Confirmado"}
