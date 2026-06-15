@@ -315,7 +315,7 @@ const Details = () => {
                 setModoComentario(null);
                 setCalificacion(0);
                 setTimeout(() => {
-                    ejecutarTerminarContrato();
+                    ejecutarTerminarContrato(data.descripcion); // Pass the description here
                 }, 1000);
             } else {
                 cerrarModalComentario();
@@ -332,16 +332,18 @@ const Details = () => {
         }
     };
 
-    const ejecutarTerminarContrato = async () => {
+    const ejecutarTerminarContrato = async (descripcionComentario) => {
         if (!departamento?._id || terminandoContrato) return;
 
         setTerminandoContrato(true);
         const loadingToast = toast.loading("Terminando contrato...");
 
         try {
+            // The backend expects 'descripcion' in the payload for this endpoint
             const url = `${import.meta.env.VITE_BACKEND_URL}/departamento/quitarEstudiante`;
             const payload = {
                 departamentoId: departamento._id,
+                descripcion: descripcionComentario, // Add the description to the payload
             };
 
             const storedUser = JSON.parse(localStorage.getItem("auth-token"));
