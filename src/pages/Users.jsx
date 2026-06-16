@@ -188,12 +188,12 @@ const Users = () => {
                 ...usersData.map((u) => ({
                     ...u,
                     rol: u?.rol || "arrendatario",
-                    confirmEmail: u?.confirmEmail !== false,
+                    status: u?.status !== false,
                 })),
                 ...estudiantesData.map((u) => ({
                     ...u,
                     rol: u?.rol || "estudiante",
-                    confirmEmail: u?.confirmEmail !== false,
+                    status: u?.status !== false,
                 })),
             ];
 
@@ -282,7 +282,7 @@ const Users = () => {
         const tipo = normalizarRol(usuario?.rol);
         if (!usuarioId || !["estudiante", "arrendatario"].includes(tipo)) return;
 
-        const estaActivo = usuario?.confirmEmail !== false;
+        const estaActivo = usuario?.status === true;
         const tieneResidencias = (userDepartamentos[usuarioId] || []).length > 0;
 
         if (estaActivo && tieneResidencias) {
@@ -309,8 +309,8 @@ const Users = () => {
             }
 
             await axios.put(
-                `${import.meta.env.VITE_BACKEND_URL}/administrador/estadoUsuario`,
-                { id: usuarioId, tipo, confirmEmail: !estaActivo },
+                `${import.meta .env.VITE_BACKEND_URL}/administrador/estadoUsuario`,
+                { id: usuarioId, tipo, status: !estaActivo },
                 {
                     headers: {
                         "Content-Type": "application/json",
@@ -322,7 +322,7 @@ const Users = () => {
             const nuevoEstado = !estaActivo;
             setUsers((prev) => prev.map((u) => {
                 const userId = u?._id || u?.id;
-                return String(userId) === String(usuarioId) ? { ...u, confirmEmail: nuevoEstado } : u;
+                return String(userId) === String(usuarioId) ? { ...u, status: nuevoEstado }: u;
             }));
 
             if (tipo === "arrendatario") {
@@ -626,14 +626,14 @@ const Users = () => {
                                     }}
                                     disabled={confirmingArrendatarioId === (user?._id || user?.id)}
                                     className={`rounded-full px-3.5 py-2 text-xs font-semibold transition-all disabled:opacity-60 ${
-                                        user?.confirmEmail === false
+                                        user?.status === false
                                             ? "bg-emerald-600 text-white hover:shadow-md"
                                             : "bg-red-50 text-red-700 border border-red-200 hover:bg-red-100"
                                     }`}
                                 >
                                     {confirmingArrendatarioId === (user?._id || user?.id)
                                         ? "Guardando..."
-                                        : user?.confirmEmail === false
+                                        : user?.status === false
                                             ? "Activar cuenta"
                                             : "Desactivar cuenta"}
                                 </button>
@@ -764,7 +764,7 @@ const Users = () => {
                                     </div>
                                 </div>
 
-                                {estudianteSeleccionado?.confirmEmail === false && (
+                                {estudianteSeleccionado?.status === false && (
                                     <div className="flex flex-col justify-center">
                                     <div className="rounded-3xl border border-emerald-100 bg-emerald-50/50 p-6 text-center">
                                         <FaClock className="h-10 w-10 text-emerald-600 mx-auto mb-3 opacity-80" />
