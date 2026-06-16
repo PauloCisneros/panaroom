@@ -735,8 +735,12 @@ const Users = () => {
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                 <div className="space-y-6">
                                     <div className="flex items-center gap-4">
-                                        <div className="h-16 w-16 rounded-2xl bg-blue-50 flex items-center justify-center text-blue-600 shadow-inner">
-                                            <FaUser className="h-7 w-7" />
+                                        <div className="h-16 w-16 overflow-hidden rounded-2xl shadow-inner">
+                                            <img
+                                                src={estudianteSeleccionado?.avatarUrl || "https://tse2.mm.bing.net/th/id/OIP.6izc_1ssklKdYfOk564lrwHaHa?rs=1&pid=ImgDetMain"}
+                                                alt="Foto de perfil"
+                                                className="h-full w-full object-cover"
+                                            />
                                         </div>
                                         <div>
                                             <h4 className="text-xl font-bold text-slate-900 leading-tight">
