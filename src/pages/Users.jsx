@@ -188,12 +188,12 @@ const Users = () => {
                 ...usersData.map((u) => ({
                     ...u,
                     rol: u?.rol || "arrendatario",
-                    status: u?.status !== false,
+                    status: u?.status === true,
                 })),
                 ...estudiantesData.map((u) => ({
                     ...u,
                     rol: u?.rol || "estudiante",
-                    status: u?.status !== false,
+                    status: u?.status === true,
                 })),
             ];
 
