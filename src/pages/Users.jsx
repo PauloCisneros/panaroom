@@ -6,7 +6,7 @@ import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { confirm } from "../utils/swal";
 import { MdInfo, MdClose } from 'react-icons/md';
-import { FaUser, FaEnvelope, FaPhone, FaLocationDot, FaBriefcase,FaClock} from "react-icons/fa6";
+import { FaEnvelope, FaPhone, FaLocationDot, FaBriefcase,FaClock} from "react-icons/fa6";
 
 const Users = () => {
     const navigate = useNavigate();

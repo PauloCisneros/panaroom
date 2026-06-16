@@ -87,6 +87,7 @@ const Details = () => {
     const [calificacion, setCalificacion] = useState(0);
     const [comentarios, setComentarios] = useState([]);
     const carruselMiniaturasRef = useRef(null);
+    const [descripcionTerminacion, setDescripcionTerminacion] = useState("");
 
     const isEstudiante = rol === 'estudiante';
     const isAdministrador = rol === 'administrador';
@@ -315,7 +316,7 @@ const Details = () => {
                 setModoComentario(null);
                 setCalificacion(0);
                 setTimeout(() => {
-                    ejecutarTerminarContrato();
+                    ejecutarTerminarContrato(data.descripcion);
                 }, 1000);
             } else {
                 cerrarModalComentario();
@@ -332,7 +333,7 @@ const Details = () => {
         }
     };
 
-    const ejecutarTerminarContrato = async () => {
+    const ejecutarTerminarContrato = async (descripcion) => {
         if (!departamento?._id || terminandoContrato) return;
 
         setTerminandoContrato(true);
@@ -342,6 +343,8 @@ const Details = () => {
             const url = `${import.meta.env.VITE_BACKEND_URL}/departamento/quitarEstudiante`;
             const payload = {
                 departamentoId: departamento._id,
+                descripcion: descripcion,
+                calificacion: Number(calificacion),
             };
 
             const storedUser = JSON.parse(localStorage.getItem("auth-token"));
