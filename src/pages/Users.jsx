@@ -232,7 +232,7 @@ const Users = () => {
             if (rol === "arrendatario") {
                 // USAMOS LA RUTA QUE SÍ GENERA LA CONTRASEÑA
                 await axios.put(
-                    `${import.meta.env.VITE_BACKEND_URL}/administrador/confirmar/${userId}`, 
+                    `${import.meta.env.VITE_BACKEND_URL}/arrendatarios/confirmar/${userId}`, // Cambiamos 'administrador' por 'arrendatarios'
                     {}, 
                     { headers }
                 );
