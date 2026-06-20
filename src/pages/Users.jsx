@@ -330,6 +330,7 @@ const Users = () => {
         const estaActivo = usuario?.status === true;
         const tieneResidencias = (userDepartamentos[usuarioId] || []).length > 0;
 
+        // Validación de seguridad para no desactivar usuarios con residencias
         if (estaActivo && tieneResidencias) {
             toast.error("No puedes desactivar esta cuenta porque tiene residencias asignadas.");
             return;
@@ -353,8 +354,9 @@ const Users = () => {
                 return;
             }
 
+            // Llamada al endpoint para cambiar status
             await axios.put(
-                `${import.meta .env.VITE_BACKEND_URL}/administrador/estadoUsuario`,
+                `${import.meta.env.VITE_BACKEND_URL}/administrador/estadoUsuario`,
                 { id: usuarioId, tipo, status: !estaActivo },
                 {
                     headers: {
@@ -365,15 +367,25 @@ const Users = () => {
             );
 
             const nuevoEstado = !estaActivo;
+
+            // Actualizamos el estado de la lista de usuarios global
             setUsers((prev) => prev.map((u) => {
-                const userId = u?._id || u?.id;
-                return String(userId) === String(usuarioId) ? { ...u, status: nuevoEstado }: u;
+                const uId = u?._id || u?.id;
+                return String(uId) === String(usuarioId) 
+                    ? { ...u, status: nuevoEstado, confirmEmail: true } // Forzamos confirmEmail a true al activar
+                    : u;
             }));
 
+            // Lógica clave para arrendatarios:
             if (tipo === "arrendatario") {
-                setArrendatariosNoConfirmadosIds((prev) => (
-                    nuevoEstado ? prev.filter((id) => String(id) !== String(usuarioId)) : (prev.includes(usuarioId) ? prev : [...prev, usuarioId])
-                ));
+                // Si lo estamos activando (nuevoEstado === true), 
+                // lo sacamos definitivamente de la lista de "No Confirmados".
+                // Si lo estamos desactivando, NO lo volvemos a meter en la lista.
+                if (nuevoEstado) {
+                    setArrendatariosNoConfirmadosIds((prev) => 
+                        prev.filter((id) => String(id) !== String(usuarioId))
+                    );
+                }
             }
 
             toast.success(nuevoEstado ? "Cuenta activada correctamente" : "Cuenta desactivada correctamente");
@@ -663,39 +675,32 @@ const Users = () => {
                                         Rechazar
                                     </button>
                                 )}
-                                {normalizarRol(user.rol) === "arrendatario" && arrendatariosNoConfirmadosIds.includes(user?._id || user?.id) ? (
-                                    <button
-                                        type="button"
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            handleAprobarArrendatario(user);
-                                        }}
-                                        disabled={confirmingArrendatarioId === (user?._id || user?.id)}
-                                        className="rounded-full px-3.5 py-2 text-xs font-semibold transition-all disabled:opacity-60 bg-blue-600 text-white hover:bg-blue-700 hover:shadow-md"
-                                    >
-                                        {confirmingArrendatarioId === (user?._id || user?.id) ? "Aprobando..." : "Aprobar cuenta"}
-                                    </button>
-                                ) : (
-                                    <button
-                                        type="button"
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            handleToggleEstadoUsuario(user);
-                                        }}
-                                        disabled={confirmingArrendatarioId === (user?._id || user?.id)}
-                                        className={`rounded-full px-3.5 py-2 text-xs font-semibold transition-all disabled:opacity-60 ${
-                                            user?.status === false
-                                                ? "bg-emerald-600 text-white hover:shadow-md"
-                                                : "bg-red-50 text-red-700 border border-red-200 hover:bg-red-100"
-                                        }`}
-                                    >
-                                        {confirmingArrendatarioId === (user?._id || user?.id)
-                                            ? "Guardando..."
-                                            : user?.status === false
-                                                ? "Activar cuenta"
-                                                : "Desactivar cuenta"}
-                                    </button>
-                                )}
+                                {normalizarRol(user.rol) === "arrendatario" && 
+                                    arrendatariosNoConfirmadosIds.includes(user?._id || user?.id) && 
+                                    user.confirmEmail !== true ? ( 
+                                        <button
+                                            type="button"
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                handleAprobarArrendatario(user);
+                                            }}
+                                            className="bg-blue-600 text-white rounded-full px-4 py-2 text-xs font-bold hover:bg-blue-700"
+                                        >
+                                            Aprobar cuenta
+                                        </button>
+                                    ) : (
+                                        // Botón normal de Activar/Desactivar
+                                        <button
+                                            type="button"
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                handleToggleEstadoUsuario(user);
+                                            }}
+                                            className={user.status ? "bg-red-50 text-red-700" : "bg-emerald-600 text-white"}
+                                        >
+                                            {user.status ? "Desactivar" : "Activar"}
+                                        </button>
+                                    )}
                             </div>
                         </div>
                         );
