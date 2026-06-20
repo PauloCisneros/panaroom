@@ -1003,9 +1003,13 @@ const Users = () => {
                                 {arrendatariosNoConfirmadosIds.includes(arrendatarioSeleccionado?._id || arrendatarioSeleccionado?.id) && (
                                     <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
                                             <p className="mb-3 text-sm text-slate-700">
-                                                Este arrendatario todavía no ha sido confirmado.
+                                                {arrendatariosNoConfirmadosIds.includes(arrendatarioSeleccionado?._id || arrendatarioSeleccionado?.id)
+                                                    ? "Este arrendatario todavía no ha sido confirmado."
+                                                    : "Gestionar el estado de la cuenta del arrendatario."}
                                             </p>
+                                            
                                             <div className="flex items-center gap-3">
+                                                {/* Botón de Rechazar (solo visible si está pendiente de aprobación) */}
                                                 {arrendatariosNoConfirmadosIds.includes(arrendatarioSeleccionado?._id || arrendatarioSeleccionado?.id) && (
                                                     <button
                                                         type="button"
@@ -1013,23 +1017,41 @@ const Users = () => {
                                                         disabled={confirmingArrendatarioId === (arrendatarioSeleccionado?._id || arrendatarioSeleccionado?.id)}
                                                         className="rounded-full px-4 py-2 text-sm font-semibold text-red-700 border border-red-200 bg-red-50 hover:bg-red-100 transition-colors disabled:opacity-60"
                                                     >
-                                                        Rechazar solicitud
+                                                        Rechazar
                                                     </button>
                                                 )}
 
-                                                <button
-                                                    type="button"
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        handleToggleEstadoUsuario(arrendatarioSeleccionado);
-                                                    }}
-                                                    disabled={confirmingArrendatarioId === (arrendatarioSeleccionado?._id || arrendatarioSeleccionado?.id)}
-                                                    className="rounded-full bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:shadow-md transition-colors disabled:opacity-60"
-                                                >
-                                                    {confirmingArrendatarioId === (arrendatarioSeleccionado?._id || arrendatarioSeleccionado?.id)
-                                                        ? "Guardando..."
-                                                        : "Activar cuenta"}
-                                                </button>
+                                                {/* Lógica unificada para Aprobar vs Activar/Desactivar */}
+                                                        {arrendatariosNoConfirmadosIds.includes(arrendatarioSeleccionado?._id || arrendatarioSeleccionado?.id) && 
+                                                        arrendatarioSeleccionado.confirmEmail !== true ? (
+                                                            <button
+                                                                type="button"
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    handleAprobarArrendatario(arrendatarioSeleccionado);
+                                                                }}
+                                                                disabled={confirmingArrendatarioId === (arrendatarioSeleccionado?._id || arrendatarioSeleccionado?.id)}
+                                                                className="rounded-full bg-blue-600 px-4 py-2 text-sm font-bold text-white hover:bg-blue-700 transition-all disabled:opacity-60"
+                                                            >
+                                                                Aprobar cuenta
+                                                            </button>
+                                                        ) : (
+                                                            <button
+                                                                type="button"
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    handleToggleEstadoUsuario(arrendatarioSeleccionado);
+                                                                }}
+                                                                disabled={confirmingArrendatarioId === (arrendatarioSeleccionado?._id || arrendatarioSeleccionado?.id)}
+                                                                className={`rounded-full px-4 py-2 text-sm font-semibold border transition-all shadow-sm ${
+                                                                    arrendatarioSeleccionado.status 
+                                                                        ? "border-red-200 bg-red-50 text-red-700 hover:bg-red-100" 
+                                                                        : "border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100"
+                                                                }`}
+                                                            >
+                                                                {arrendatarioSeleccionado.status ? "Desactivar" : "Activar"}
+                                                            </button>
+                                                        )}
                                             </div>
                                         </div>
                                 )}
