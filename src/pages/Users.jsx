@@ -213,42 +213,49 @@ const Users = () => {
     }, []);
     
     const handleAprobarArrendatario = async (usuario) => {
-    const usuarioId = usuario?._id || usuario?.id;
-    
-    // Aquí, si tu backend espera un endpoint específico para activar, llámalo.
-    // Si usas el mismo /estadoUsuario, asegúrate de enviar status: true.
-    const confirmar = await confirm({
-        title: 'Aprobar y activar cuenta',
-        text: `¿Estás seguro de que deseas aprobar la solicitud de ${usuario?.nombre}? Esto activará su cuenta inmediatamente.`,
-        icon: 'success',
-    });
-    
-    if (!confirmar) return;
-
-    try {
-        const storedUser = JSON.parse(localStorage.getItem("auth-token"));
-        const token = storedUser?.state?.token;
-
-        // Llamada al endpoint para activar (el que ya tienes)
-        await axios.put(
-            `${import.meta.env.VITE_BACKEND_URL}/administrador/estadoUsuario`,
-            { id: usuarioId, tipo: normalizarRol(usuario.rol), status: true },
-            { headers: { Authorization: `Bearer ${token}` } }
-        );
-
-        // ACTUALIZACIÓN LOCAL (Frontend):
-        // 1. Quitar el ID de la lista de no confirmados
-        setArrendatariosNoConfirmadosIds(prev => prev.filter(id => id !== usuarioId));
-        // 2. Marcar al usuario como activo
-        setUsers(prev => prev.map(u => (u._id === usuarioId ? { ...u, status: true } : u)));
+        const userId = usuario?._id || usuario?.id;
+        const rol = normalizarRol(usuario.rol); // "arrendatario" o "estudiante"
         
-        toast.success("Cuenta aprobada y activada correctamente");
-        cerrarDetalleArrendatario();
-    } catch (error) {
-        console.error("Error al aprobar la cuenta:", error);
-        toast.error("Error al aprobar la cuenta");
-    }
-};
+        const confirmacion = await confirm({ 
+            title: 'Aprobar cuenta', 
+            text: '¿Deseas activar esta cuenta?', 
+            icon: 'info' 
+        });
+        if (!confirmacion) return;
+
+        setConfirmingArrendatarioId(userId);
+        try {
+            const token = JSON.parse(localStorage.getItem("auth-token"))?.state?.token;
+            const headers = { Authorization: `Bearer ${token}` };
+
+            // --- AQUÍ ESTÁ LA LÓGICA DE SEPARACIÓN ---
+            if (rol === "arrendatario") {
+                // USAMOS LA RUTA QUE SÍ GENERA LA CONTRASEÑA
+                await axios.put(
+                    `${import.meta.env.VITE_BACKEND_URL}/administrador/confirmar/${userId}`, 
+                    {}, 
+                    { headers }
+                );
+            } else {
+                // LOS ESTUDIANTES O USUARIOS YA ACTIVOS USAN EL ENDPOINT GENÉRICO
+                await axios.put(
+                    `${import.meta.env.VITE_BACKEND_URL}/administrador/estadoUsuario`,
+                    { id: userId, tipo: rol, status: true },
+                    { headers }
+                );
+            }
+            
+            // Actualización visual local (común para ambos)
+            setUsers(prev => prev.map(u => (u._id === userId ? { ...u, status: true } : u)));
+            setArrendatariosNoConfirmadosIds(prev => prev.filter(id => id !== userId));
+            
+            toast.success("Cuenta aprobada correctamente");
+        } catch (e) { 
+            console.error(e);
+            toast.error("Error al aprobar"); 
+        }
+        finally { setConfirmingArrendatarioId(null); }
+    };
 
     useEffect(() => {
         fetchUsers();
