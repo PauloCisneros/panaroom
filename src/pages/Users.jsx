@@ -211,6 +211,44 @@ const Users = () => {
             setLoading(false);
         }
     }, []);
+    
+    const handleAprobarArrendatario = async (usuario) => {
+    const usuarioId = usuario?._id || usuario?.id;
+    
+    // Aquí, si tu backend espera un endpoint específico para activar, llámalo.
+    // Si usas el mismo /estadoUsuario, asegúrate de enviar status: true.
+    const confirmar = await confirm({
+        title: 'Aprobar y activar cuenta',
+        text: `¿Estás seguro de que deseas aprobar la solicitud de ${usuario?.nombre}? Esto activará su cuenta inmediatamente.`,
+        icon: 'success',
+    });
+    
+    if (!confirmar) return;
+
+    try {
+        const storedUser = JSON.parse(localStorage.getItem("auth-token"));
+        const token = storedUser?.state?.token;
+
+        // Llamada al endpoint para activar (el que ya tienes)
+        await axios.put(
+            `${import.meta.env.VITE_BACKEND_URL}/administrador/estadoUsuario`,
+            { id: usuarioId, tipo: normalizarRol(usuario.rol), status: true },
+            { headers: { Authorization: `Bearer ${token}` } }
+        );
+
+        // ACTUALIZACIÓN LOCAL (Frontend):
+        // 1. Quitar el ID de la lista de no confirmados
+        setArrendatariosNoConfirmadosIds(prev => prev.filter(id => id !== usuarioId));
+        // 2. Marcar al usuario como activo
+        setUsers(prev => prev.map(u => (u._id === usuarioId ? { ...u, status: true } : u)));
+        
+        toast.success("Cuenta aprobada y activada correctamente");
+        cerrarDetalleArrendatario();
+    } catch (error) {
+        console.error("Error al aprobar la cuenta:", error);
+        toast.error("Error al aprobar la cuenta");
+    }
+};
 
     useEffect(() => {
         fetchUsers();
@@ -618,25 +656,39 @@ const Users = () => {
                                         Rechazar
                                     </button>
                                 )}
-                                <button
-                                    type="button"
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        handleToggleEstadoUsuario(user);
-                                    }}
-                                    disabled={confirmingArrendatarioId === (user?._id || user?.id)}
-                                    className={`rounded-full px-3.5 py-2 text-xs font-semibold transition-all disabled:opacity-60 ${
-                                        user?.status === false
-                                            ? "bg-emerald-600 text-white hover:shadow-md"
-                                            : "bg-red-50 text-red-700 border border-red-200 hover:bg-red-100"
-                                    }`}
-                                >
-                                    {confirmingArrendatarioId === (user?._id || user?.id)
-                                        ? "Guardando..."
-                                        : user?.status === false
-                                            ? "Activar cuenta"
-                                            : "Desactivar cuenta"}
-                                </button>
+                                {normalizarRol(user.rol) === "arrendatario" && arrendatariosNoConfirmadosIds.includes(user?._id || user?.id) ? (
+                                    <button
+                                        type="button"
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleAprobarArrendatario(user);
+                                        }}
+                                        disabled={confirmingArrendatarioId === (user?._id || user?.id)}
+                                        className="rounded-full px-3.5 py-2 text-xs font-semibold transition-all disabled:opacity-60 bg-blue-600 text-white hover:bg-blue-700 hover:shadow-md"
+                                    >
+                                        {confirmingArrendatarioId === (user?._id || user?.id) ? "Aprobando..." : "Aprobar cuenta"}
+                                    </button>
+                                ) : (
+                                    <button
+                                        type="button"
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleToggleEstadoUsuario(user);
+                                        }}
+                                        disabled={confirmingArrendatarioId === (user?._id || user?.id)}
+                                        className={`rounded-full px-3.5 py-2 text-xs font-semibold transition-all disabled:opacity-60 ${
+                                            user?.status === false
+                                                ? "bg-emerald-600 text-white hover:shadow-md"
+                                                : "bg-red-50 text-red-700 border border-red-200 hover:bg-red-100"
+                                        }`}
+                                    >
+                                        {confirmingArrendatarioId === (user?._id || user?.id)
+                                            ? "Guardando..."
+                                            : user?.status === false
+                                                ? "Activar cuenta"
+                                                : "Desactivar cuenta"}
+                                    </button>
+                                )}
                             </div>
                         </div>
                         );
