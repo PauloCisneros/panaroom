@@ -695,10 +695,10 @@ const Users = () => {
                                                 e.stopPropagation();
                                                 handleToggleEstadoUsuario(user);
                                             }}
-                                            className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200 active:scale-95 ${
+                                            className={`rounded-full px-3.5 py-2 text-xs font-semibold border transition-all shadow-sm ${
                                                 user.status 
-                                                    ? "bg-red-50 text-red-700 hover:bg-red-100" 
-                                                    : "bg-emerald-600 text-white hover:bg-emerald-700"
+                                                    ? "border-red-200 bg-red-50 text-red-700 hover:bg-red-100" 
+                                                    : "border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100"
                                             }`}
                                         >
                                             {user.status ? "Desactivar" : "Activar"}
