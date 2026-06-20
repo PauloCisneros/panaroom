@@ -689,14 +689,17 @@ const Users = () => {
                                             Aprobar cuenta
                                         </button>
                                     ) : (
-                                        // Botón normal de Activar/Desactivar
                                         <button
                                             type="button"
                                             onClick={(e) => {
                                                 e.stopPropagation();
                                                 handleToggleEstadoUsuario(user);
                                             }}
-                                            className={user.status ? "bg-red-50 text-red-700" : "bg-emerald-600 text-white"}
+                                            className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200 active:scale-95 ${
+                                                user.status 
+                                                    ? "bg-red-50 text-red-700 hover:bg-red-100" 
+                                                    : "bg-emerald-600 text-white hover:bg-emerald-700"
+                                            }`}
                                         >
                                             {user.status ? "Desactivar" : "Activar"}
                                         </button>
